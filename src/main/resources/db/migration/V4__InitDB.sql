@@ -1,6 +1,3 @@
-drop table if exists purchase_info;
-drop table if exists purchase_xml_file;
-
 create table purchase_info (
     updated_at timestamp,
     purchase_number int8 not null,
