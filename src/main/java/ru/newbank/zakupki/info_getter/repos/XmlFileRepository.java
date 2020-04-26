@@ -9,5 +9,9 @@ import java.util.List;
 @Repository
 public interface XmlFileRepository extends CrudRepository<PurchaseXmlFile, Integer> {
 
-//    List<PurchaseXmlFile> findAllXmlById(long purchase_number);
+
+    //List<PurchaseXmlFile> findAllXmlById(long purchase_number);
+
+
+
 }

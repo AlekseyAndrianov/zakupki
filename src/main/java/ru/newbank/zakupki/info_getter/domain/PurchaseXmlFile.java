@@ -1,11 +1,12 @@
 package ru.newbank.zakupki.info_getter.domain;
 
 import lombok.Data;
-import org.json.XML;
 import org.springframework.lang.NonNull;
 
-import javax.persistence.*;
-import java.sql.SQLXML;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Data
 @Entity
