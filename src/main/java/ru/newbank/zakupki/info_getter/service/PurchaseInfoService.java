@@ -1,5 +1,6 @@
 package ru.newbank.zakupki.info_getter.service;
 
+import org.json.XML;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.newbank.zakupki.info_getter.domain.PurchaseInfo;
@@ -18,4 +19,5 @@ public class PurchaseInfoService {
     public int getNotice_idByPurchase_number(Long purchaseNumber){
         return infoRepository.findById(purchaseNumber).get().getNoticeId();
     }
+
 }

@@ -19,4 +19,9 @@ public class PurchaseXmlFileService {
 //        return xmlFileRepository.findAllXmlById(purchase_number);
 //    }
 
+    public String getXmlByPurchaseNumber(Long purchaseNumber){
+        return xmlFileRepository.findByPurchaseNumber(purchaseNumber).getXmlFile();
+    }
+
+
 }

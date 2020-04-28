@@ -1,24 +1,15 @@
 package ru.newbank.zakupki.info_getter.controller;
 
+import org.json.JSONObject;
 import org.json.XML;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 import ru.newbank.zakupki.info_getter.service.PurchaseInfoService;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.sql.SQLXML;
-import java.util.Arrays;
+import ru.newbank.zakupki.info_getter.service.PurchaseXmlFileService;
 
 @RestController
 @RequestMapping("info/")
@@ -34,28 +25,37 @@ public class InfoController {
     @Autowired
     PurchaseInfoService purchaseInfoService;
 
+    @Autowired
+    PurchaseXmlFileService purchaseXmlFileService;
+
     @Value("${zakupki.url}")
     private String baseUrl;
 
-    @GetMapping(value = "notice/xml/{purchaseNumber}", produces = MediaType.APPLICATION_XML_VALUE
+    @GetMapping(
+            value = "notice/xml/{purchaseNumber}",
+            headers = "Accept=application/json",
+            produces = {"application/json; application/xml; charset=UTF-8"}
     )
-    public String getNoticeByPurchaseNumber(@PathVariable Long purchaseNumber) {
-        int noticeId = purchaseInfoService.getNotice_idByPurchase_number(purchaseNumber);
-        String url = baseUrl + "?noticeId=" + noticeId;
-        HttpHeaders httpHeaders = new HttpHeaders();
-//        httpHeaders.set("Content-Type", MediaType.APPLICATION_XML_VALUE);
-//        httpHeaders.set("Accept", MediaType.APPLICATION_XML_VALUE);
-        HttpEntity<?> entity = new HttpEntity<>(httpHeaders);
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-        return responseEntity.getBody();
+    public String getNoticeByPurchaseNumber(@PathVariable Long purchaseNumber, @Nullable @RequestParam("mediaType") String mediaType) {
+        String xmlFromTable = purchaseXmlFileService.getXmlByPurchaseNumber(purchaseNumber);
+        String result = null;
+        if (xmlFromTable != null)
+            result = xmlFromTable;
+        else {
+            int noticeId = purchaseInfoService.getNotice_idByPurchase_number(purchaseNumber);
+            String url = baseUrl + "?noticeId=" + noticeId;
+            HttpHeaders httpHeaders = new HttpHeaders();
+            HttpEntity<?> entity = new HttpEntity<>(httpHeaders);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            result = responseEntity.getBody();
+
+        }
+        if (mediaType != null && mediaType.equals("json")) {
+            JSONObject xmlJSONObj = XML.toJSONObject(result);
+            result = xmlJSONObj.toString();
+        }
+        return result;
     }
-
-    @GetMapping("notice/0")
-    public String getNoticeByPurchaseNumber2() {
-
-        return "Hello!";
-    }
-
 
 }
