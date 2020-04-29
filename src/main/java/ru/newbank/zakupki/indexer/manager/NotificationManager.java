@@ -1,6 +1,8 @@
 package ru.newbank.zakupki.indexer.manager;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
 import ru.newbank.zakupki.indexer.domain.ArchivesForRegion;
 import ru.newbank.zakupki.indexer.service.IndexService;
@@ -13,33 +15,21 @@ import java.util.Arrays;
 import java.util.List;
 
 @Controller
+@PropertySource("classpath:application.properties")
 public class NotificationManager {
 
     @Autowired
     IndexService indexService;
 
+    @Value("${file.manager.root.url}")
     private String rootUrl;
-    private Path rootFilesDirectory;
-    private String dbUrl;
-    private String dbUser;
-    private String dbPassword;
-
-    public NotificationManager() {
-        System.setProperty("file.manager.root.url", "D:\\Проекты\\Коммерческие\\");
-        rootUrl = System.getProperty("file.manager.root.url");
-        rootFilesDirectory = Paths.get(rootUrl);
-
-        dbUrl = System.getProperty("db.url");
-        dbUser = System.getProperty("db.user");
-        dbPassword = System.getProperty("db.password");
-    }
-
 
     public Path getFolderByRegion(Region region) {
+        System.out.println(rootUrl);
         return Paths.get(rootUrl, region.getName());
     }
 
-    public void manageChangesForRegion(Path regionFolder) {
+    public void manageChangesForRegion(Path regionFolder, String prefixKey_ns4) {
         List<File> files = Arrays.asList(regionFolder.toFile().listFiles());
         files.stream().filter(file -> { // проверяем прошел ли файл процедуру
             System.out.println("File name: " + file.getName());
@@ -51,7 +41,7 @@ public class NotificationManager {
             List<File> filesFromZip = ZipManager.getFilesFromZip(file);
             filesFromZip.stream()
                     .filter(
-                            fileToFiler -> isTargetFile(fileToFiler.getName())
+                            fileToFiler -> isTargetFile(fileToFiler.getName(), prefixKey_ns4)
                     ).forEach(
                     fileToDB -> {
                         System.out.println("File from archive: " + fileToDB.getName());
@@ -62,10 +52,9 @@ public class NotificationManager {
 
     }
 
-    private boolean isTargetFile(String fileName) {
-        String preMask = "fcsNotificationEA44";
+    private boolean isTargetFile(String fileName, String prefixKey_ns4) {
         String postMask = ".xml";
-        boolean relativeName = fileName.contains(preMask) && fileName.contains(postMask);
+        boolean relativeName = fileName.contains(prefixKey_ns4) && fileName.contains(postMask);
         System.out.println("relativeName: " + relativeName + "; " + fileName);
         return relativeName;
     }

@@ -23,12 +23,6 @@ public class ZakupkiApplication {
 //		System.setProperty("db.username", "postgres");
 //		System.setProperty("db.password", "1234");
 		SpringApplication.run(ZakupkiApplication.class, args);
-
-		for (Region region : Region.values()) {
-			Path folder = notificationManager.getFolderByRegion(region);
-			System.out.println(folder.getFileName());
-			notificationManager.manageChangesForRegion(folder);
-		}
 	}
 
 }
