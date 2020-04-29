@@ -14,17 +14,17 @@ public class PurchaseXmlFile {
     @Id
     @Column(name = "xml_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    int xmlId;
+    private int xmlId;
 
     @NonNull
     @Column(name = "purchase_number")
-    long purchaseNumber;
+    private long purchaseNumber;
 
     @NonNull
     @Column(name = "file_name")
-    String fileName;
+    private String fileName;
 
-    @Column(name = "xml_file")
+    @Column(name = "xml_file", columnDefinition = "TEXT")
     @NonNull
-    String xmlFile;
+    private String xmlFile;
 }

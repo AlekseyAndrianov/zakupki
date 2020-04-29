@@ -33,11 +33,11 @@ public class NotificationManager {
         List<File> files = Arrays.asList(regionFolder.toFile().listFiles());
         files.stream().filter(file -> { // проверяем прошел ли файл процедуру
             System.out.println("File name: " + file.getName());
-            System.out.println("is null: " + (indexService == null));
             ArchivesForRegion archivesForRegion = indexService.getFirstByArchive_name(file.getName());
             System.out.println("ArchivesForRegion: " + archivesForRegion);
             return (archivesForRegion == null); // Проверка по названию архива
         }).forEach(file -> {
+            indexService.addArchiveInfoToDB(file.getName(), regionFolder.getFileName().toString()); // Добавляем информацию об архиве
             List<File> filesFromZip = ZipManager.getFilesFromZip(file);
             filesFromZip.stream()
                     .filter(

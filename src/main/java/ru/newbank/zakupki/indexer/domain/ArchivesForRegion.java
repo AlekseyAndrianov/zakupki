@@ -3,6 +3,7 @@ package ru.newbank.zakupki.indexer.domain;
 import lombok.*;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Data
 @Entity
@@ -18,6 +19,10 @@ public class ArchivesForRegion {
 
     @Column(name = "archive_name")
     @NonNull String archiveName;
+
     @NonNull String region;
+
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
 
 }

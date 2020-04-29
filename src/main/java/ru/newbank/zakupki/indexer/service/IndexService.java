@@ -21,28 +21,28 @@ public class IndexService {
     @Autowired
     private XmlFileRepository xmlFileRepository;
 
-    public IndexService() {
-        this.archivesRepository = archivesRepository;
-        this.infoRepository = infoRepository;
-        this.xmlFileRepository = xmlFileRepository;
-    }
-
     public ArchivesForRegion getFirstByArchive_name(String name) {
         System.out.println("Name: " + name);
         return archivesRepository.findByArchiveName(name);
     }
-//    ArchivesForRegion archivesForRegion = new ArchivesForRegion(fileToDB.getName(), );
-//        archivesRepository.save(archivesForRegion);
+
+    public void addArchiveInfoToDB(String archiveName, String region) {
+        ArchivesForRegion archivesForRegion = new ArchivesForRegion(archiveName, region);
+        archivesRepository.save(archivesForRegion);
+    }
 
     public void addFileToDB(File fileToDB) {
 //        "fcsNotificationEP44_{номер извещения}_{номер закупки}.xml";
         String[] fileNamePieces = fileToDB.getName().split("_");
         Long purchaseNumber = Long.parseLong(fileNamePieces[1]);
         int noticeId = Integer.parseInt(fileNamePieces[2].replaceAll(".xml", ""));
-        String content = null;
+        StringBuilder content = new StringBuilder();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileToDB));
-            content = reader.readLine();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public class IndexService {
         PurchaseInfo purchaseInfo = new PurchaseInfo(purchaseNumber, noticeId);
         infoRepository.save(purchaseInfo);
 
-        PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileToDB.getName(), content);
+        PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileToDB.getName(), content.toString());
         xmlFileRepository.save(purchaseXmlFile);
     }
 

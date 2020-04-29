@@ -1,7 +1,7 @@
 create table if not exists purchase_info (
-    updated_at timestamp,
     purchase_number int8 not null,
     notice_id int,
+    updated_at timestamp,
     primary key (purchase_number)
 );
 create table if not exists purchase_xml_file (
@@ -14,7 +14,7 @@ create table if not exists purchase_xml_file (
 );
 create table if not exists archives_for_region (
     archive_id serial,
-    archive_name varchar(150),
+    archive_name varchar(150) unique ,
     region varchar(50),
     updated_at timestamp,
     primary key (archive_id)

@@ -1,15 +1,12 @@
 package ru.newbank.zakupki.indexer.controller;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.newbank.zakupki.indexer.manager.NotificationManager;
 import ru.newbank.zakupki.indexer.manager.Region;
 import ru.newbank.zakupki.indexer.service.IndexService;
-import ru.newbank.zakupki.indexer.service.XmlPurchaseSet;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("indexing")
