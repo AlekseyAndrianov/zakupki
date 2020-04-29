@@ -1,33 +1,19 @@
-package ru.newbank.zakupki.indexer.manager;
+package ru.newbank.zakupki.indexer.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
 import ru.newbank.zakupki.indexer.domain.ArchivesForRegion;
-import ru.newbank.zakupki.indexer.service.IndexService;
-import ru.newbank.zakupki.info_getter.repos.XmlFileRepository;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 @Controller
-@PropertySource("classpath:application.properties")
 public class NotificationManager {
 
     @Autowired
     IndexService indexService;
-
-    @Value("${file.manager.root.url}")
-    private String rootUrl;
-
-    public Path getFolderByRegion(Region region) {
-        System.out.println(rootUrl);
-        return Paths.get(rootUrl, region.getName());
-    }
 
     public void manageChangesForRegion(Path regionFolder, String prefixKey_ns4) {
         List<File> files = Arrays.asList(regionFolder.toFile().listFiles());
@@ -44,12 +30,13 @@ public class NotificationManager {
                             fileToFiler -> isTargetFile(fileToFiler.getName(), prefixKey_ns4)
                     ).forEach(
                     fileToDB -> {
-                        System.out.println("File from archive: " + fileToDB.getName());
-                        indexService.addFileToDB(fileToDB);
+                        String fileName = fileToDB.getName();
+                        fileName = fileName.substring(fileName.indexOf(prefixKey_ns4));
+                        System.out.println("File from archive: " + fileName);
+                        indexService.addFileToDB(fileToDB, fileName);
                     }
             );
         });
-
     }
 
     private boolean isTargetFile(String fileName, String prefixKey_ns4) {

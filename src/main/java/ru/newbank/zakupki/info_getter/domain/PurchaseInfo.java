@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 
 @Data
 @Entity
@@ -15,9 +16,6 @@ import java.sql.Timestamp;
 @RequiredArgsConstructor
 @NoArgsConstructor
 public class PurchaseInfo {
-
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
 
     @Id
     @Column(name = "purchase_number")
@@ -28,4 +26,6 @@ public class PurchaseInfo {
     @NonNull
     private int noticeId;
 
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime updatedAt;
 }

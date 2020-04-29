@@ -1,4 +1,4 @@
-package ru.newbank.zakupki.indexer.manager;
+package ru.newbank.zakupki.indexer.service;
 
 import lombok.Getter;
 

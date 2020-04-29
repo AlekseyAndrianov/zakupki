@@ -1,6 +1,8 @@
 package ru.newbank.zakupki.indexer.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import ru.newbank.zakupki.indexer.domain.ArchivesForRegion;
 import ru.newbank.zakupki.indexer.repos.ArchivesRepository;
@@ -10,8 +12,13 @@ import ru.newbank.zakupki.info_getter.repos.InfoRepository;
 import ru.newbank.zakupki.info_getter.repos.XmlFileRepository;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 @Service
+@PropertySource("classpath:application.properties")
 public class IndexService {
 
     @Autowired
@@ -20,20 +27,26 @@ public class IndexService {
     private InfoRepository infoRepository;
     @Autowired
     private XmlFileRepository xmlFileRepository;
+    @Value("${file.manager.root.url}")
+    private String rootUrl;
 
     public ArchivesForRegion getFirstByArchive_name(String name) {
         System.out.println("Name: " + name);
         return archivesRepository.findByArchiveName(name);
     }
 
+    public Path getFolderByRegion(Region region) {
+        System.out.println(rootUrl);
+        return Paths.get(rootUrl, region.getName());
+    }
+
     public void addArchiveInfoToDB(String archiveName, String region) {
-        ArchivesForRegion archivesForRegion = new ArchivesForRegion(archiveName, region);
+        ArchivesForRegion archivesForRegion = new ArchivesForRegion(archiveName, region, OffsetDateTime.now(ZoneId.systemDefault()));
         archivesRepository.save(archivesForRegion);
     }
 
-    public void addFileToDB(File fileToDB) {
-//        "fcsNotificationEP44_{номер извещения}_{номер закупки}.xml";
-        String[] fileNamePieces = fileToDB.getName().split("_");
+    public void addFileToDB(File fileToDB, String fileName) {
+        String[] fileNamePieces = fileName.split("_");
         Long purchaseNumber = Long.parseLong(fileNamePieces[1]);
         int noticeId = Integer.parseInt(fileNamePieces[2].replaceAll(".xml", ""));
         StringBuilder content = new StringBuilder();
@@ -49,10 +62,10 @@ public class IndexService {
             e.printStackTrace();
         }
 
-        PurchaseInfo purchaseInfo = new PurchaseInfo(purchaseNumber, noticeId);
+        PurchaseInfo purchaseInfo = new PurchaseInfo(purchaseNumber, noticeId, OffsetDateTime.now(ZoneId.systemDefault()));
         infoRepository.save(purchaseInfo);
 
-        PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileToDB.getName(), content.toString());
+        PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileName, content.toString());
         xmlFileRepository.save(purchaseXmlFile);
     }
 

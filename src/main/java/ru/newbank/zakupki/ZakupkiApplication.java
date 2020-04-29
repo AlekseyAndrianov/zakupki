@@ -3,10 +3,7 @@ package ru.newbank.zakupki;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import ru.newbank.zakupki.indexer.manager.NotificationManager;
-import ru.newbank.zakupki.indexer.manager.Region;
-
-import java.nio.file.Path;
+import ru.newbank.zakupki.indexer.service.NotificationManager;
 
 @SpringBootApplication
 public class ZakupkiApplication {

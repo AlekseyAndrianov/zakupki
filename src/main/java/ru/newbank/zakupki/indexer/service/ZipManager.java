@@ -1,4 +1,4 @@
-package ru.newbank.zakupki.indexer.manager;
+package ru.newbank.zakupki.indexer.service;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -3,7 +3,7 @@ package ru.newbank.zakupki.indexer.domain;
 import lombok.*;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 
 @Data
 @Entity
@@ -22,7 +22,7 @@ public class ArchivesForRegion {
 
     @NonNull String region;
 
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @NonNull private OffsetDateTime updatedAt;
 
 }
