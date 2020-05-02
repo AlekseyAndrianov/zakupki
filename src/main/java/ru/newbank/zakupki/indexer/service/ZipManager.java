@@ -29,6 +29,7 @@ public class ZipManager {
                 }
                 fos.close();
                 ze = zis.getNextEntry();
+                newFile.deleteOnExit();
                 fileList.add(newFile);
             }
             zis.closeEntry();

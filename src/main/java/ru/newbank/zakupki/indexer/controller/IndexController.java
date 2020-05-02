@@ -7,6 +7,7 @@ import ru.newbank.zakupki.indexer.service.Region;
 import ru.newbank.zakupki.indexer.service.IndexService;
 
 import java.nio.file.Path;
+import java.util.Date;
 
 @RestController
 @RequestMapping("indexing")
@@ -23,13 +24,15 @@ public class IndexController {
     }
 
     @GetMapping("accept-changes")
-    public void putNewPurchases(@RequestParam String prefixKey_ns4) { //fcsNotificationEP
-
+    public String putNewPurchases(@RequestParam String prefixKey_ns4) { //prefixKey_ns4=fcsNotificationEP
+        long start = new Date().getTime();
         for (Region region : Region.values()) {
             Path folder = indexService.getFolderByRegion(region);
             System.out.println(folder.getFileName());
             notificationManager.manageChangesForRegion(folder, prefixKey_ns4);
         }
+        long stop = new Date().getTime();
+        return "DONE! \nProcess time = " + ((stop - start) / 1000) + " sec.";
     }
 
 }
