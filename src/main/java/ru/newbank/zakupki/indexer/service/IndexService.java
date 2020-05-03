@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import ru.newbank.zakupki.indexer.domain.ArchivesForRegion;
 import ru.newbank.zakupki.indexer.repos.ArchivesRepository;
 import ru.newbank.zakupki.info_getter.domain.PurchaseInfo;
@@ -11,7 +13,14 @@ import ru.newbank.zakupki.info_getter.domain.PurchaseXmlFile;
 import ru.newbank.zakupki.info_getter.repos.InfoRepository;
 import ru.newbank.zakupki.info_getter.repos.XmlFileRepository;
 
-import java.io.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -49,24 +58,43 @@ public class IndexService {
         String[] fileNamePieces = fileName.split("_");
         Long purchaseNumber = Long.parseLong(fileNamePieces[1]);
         int noticeId = Integer.parseInt(fileNamePieces[2].replaceAll(".xml", ""));
-        StringBuilder content = new StringBuilder();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileToDB));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                content.append(line).append("\n");
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String xmlContentAfterRemoveSignature = reduceFileContent(fileToDB);
 
         PurchaseInfo purchaseInfo = new PurchaseInfo(purchaseNumber, noticeId, OffsetDateTime.now(ZoneId.systemDefault()));
         infoRepository.save(purchaseInfo);
 
-        PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileName, content.toString());
+        PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileName, xmlContentAfterRemoveSignature);
         xmlFileRepository.save(purchaseXmlFile);
+    }
+
+    private String reduceFileContent(File xmlWithSignature) {
+        StringWriter stringWriter = null;
+        try {
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document document = documentBuilder.parse(xmlWithSignature);
+
+            removeElement(document, "signature");
+            removeElement(document, "ns3:signature");
+
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            stringWriter = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return stringWriter == null ? "" : stringWriter.toString();
+    }
+
+    private void removeElement(Document document, String signature) {
+        NodeList nodes = document.getElementsByTagName(signature);
+        int nodesLength = nodes.getLength();
+        if (nodesLength > 0) {
+            for (int i = nodes.getLength() - 1; i >= 0; i--) {
+                nodes.item(i).setTextContent("Content was deleted");
+            }
+        }
     }
 
     public PurchaseXmlFile findFirstByFileName(String fileName) {
