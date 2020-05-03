@@ -30,22 +30,25 @@ import java.time.ZoneId;
 @PropertySource("classpath:application.properties")
 public class IndexService {
 
-    @Autowired
-    private ArchivesRepository archivesRepository;
-    @Autowired
-    private InfoRepository infoRepository;
-    @Autowired
-    private XmlFileRepository xmlFileRepository;
+    private final ArchivesRepository archivesRepository;
+    private final InfoRepository infoRepository;
+    private final XmlFileRepository xmlFileRepository;
+
     @Value("${file.manager.root.url}")
     private String rootUrl;
 
+    @Autowired
+    public IndexService(ArchivesRepository archivesRepository, InfoRepository infoRepository, XmlFileRepository xmlFileRepository) {
+        this.archivesRepository = archivesRepository;
+        this.infoRepository = infoRepository;
+        this.xmlFileRepository = xmlFileRepository;
+    }
+
     public ArchivesForRegion getFirstByArchive_name(String name) {
-        System.out.println("Name: " + name);
         return archivesRepository.findByArchiveName(name);
     }
 
     public Path getFolderByRegion(Region region) {
-        System.out.println(rootUrl);
         return Paths.get(rootUrl, region.getName());
     }
 
@@ -95,9 +98,5 @@ public class IndexService {
                 nodes.item(i).setTextContent("Content was deleted");
             }
         }
-    }
-
-    public PurchaseXmlFile findFirstByFileName(String fileName) {
-        return xmlFileRepository.findFirstByFileName(fileName);
     }
 }

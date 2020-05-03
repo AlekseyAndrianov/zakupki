@@ -23,6 +23,7 @@ public class ArchivesForRegion {
     @NonNull String region;
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    @NonNull private OffsetDateTime updatedAt;
+    @NonNull
+    private OffsetDateTime updatedAt;
 
 }
