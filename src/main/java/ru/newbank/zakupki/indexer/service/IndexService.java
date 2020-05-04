@@ -1,5 +1,6 @@
 package ru.newbank.zakupki.indexer.service;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -25,9 +26,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @PropertySource("classpath:application.properties")
+@Log4j2
 public class IndexService {
 
     private final ArchivesRepository archivesRepository;
@@ -57,17 +61,30 @@ public class IndexService {
         archivesRepository.save(archivesForRegion);
     }
 
-    public void addFileToDB(File fileToDB, String fileName) {
-        String[] fileNamePieces = fileName.split("_");
-        Long purchaseNumber = Long.parseLong(fileNamePieces[1]);
-        int noticeId = Integer.parseInt(fileNamePieces[2].replaceAll(".xml", ""));
-        String xmlContentAfterRemoveSignature = reduceFileContent(fileToDB);
+    public void addAllFilesToDB(List<File> fileToDB, String prefixKey_ns4, String archiveName) {
+        List<PurchaseInfo> purchaseInfoList = new ArrayList<>();
+        List<PurchaseXmlFile> purchaseXmlFileList = new ArrayList<>();
 
-        PurchaseInfo purchaseInfo = new PurchaseInfo(purchaseNumber, noticeId, OffsetDateTime.now(ZoneId.systemDefault()));
-        infoRepository.save(purchaseInfo);
+        fileToDB.stream().forEach(file -> {
+            String fileName = file.getName();
+            fileName = fileName.substring(fileName.indexOf(prefixKey_ns4));
+            String[] fileNamePieces = fileName.split("_");
+            Long purchaseNumber = Long.parseLong(fileNamePieces[1]);
+            int noticeId = Integer.parseInt(fileNamePieces[2].replaceAll(".xml", ""));
+            String xmlContentAfterRemoveSignature = reduceFileContent(file);
 
-        PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileName, xmlContentAfterRemoveSignature);
-        xmlFileRepository.save(purchaseXmlFile);
+            PurchaseInfo purchaseInfo = new PurchaseInfo(purchaseNumber, noticeId, OffsetDateTime.now(ZoneId.systemDefault()));
+            purchaseInfoList.add(purchaseInfo);
+
+            PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileName, xmlContentAfterRemoveSignature);
+            purchaseXmlFileList.add(purchaseXmlFile);
+        });
+
+        infoRepository.saveAll(purchaseInfoList);
+        xmlFileRepository.saveAll(purchaseXmlFileList);
+
+        log.info(String.format("Add %d xml-files to database from archive '%s'", fileToDB.size(), archiveName));
+
     }
 
     private String reduceFileContent(File xmlWithSignature) {

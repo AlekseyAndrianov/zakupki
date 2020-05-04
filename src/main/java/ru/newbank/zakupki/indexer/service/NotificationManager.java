@@ -9,9 +9,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
-@Log4j2
 public class NotificationManager {
 
     private final IndexService indexService;
@@ -23,25 +23,21 @@ public class NotificationManager {
 
     public void manageChangesForRegion(Path regionFolder, String prefixKey_ns4) {
         List<File> files = Arrays.asList(regionFolder.toFile().listFiles());
-        log.info(String.format("Start indexing %d files for '%s' folder", files.size(), regionFolder.getFileName()));
         files.stream().filter(file -> { // проверяем прошел ли файл процедуру
             ArchivesForRegion archivesForRegion = indexService.getFirstByArchive_name(file.getName());
             return (archivesForRegion == null); // Проверка по названию архива
         }).forEach(file -> {
-            indexService.addArchiveInfoToDB(file.getName(), regionFolder.getFileName().toString()); // Добавляем информацию об архиве
-            log.info(String.format("File '%s' add to database and start unzipping", file.getName()));
             List<File> filesFromZip = ZipManager.getFilesFromZip(file);
-            filesFromZip.stream()
+
+            List<File> filesFilteredToDB =
+                    filesFromZip.stream()
                     .filter(
                             fileToFiler -> isTargetFile(fileToFiler.getName(), prefixKey_ns4)
-                    ).forEach(
-                    fileToDB -> {
-                        String fileName = fileToDB.getName();
-                        fileName = fileName.substring(fileName.indexOf(prefixKey_ns4));
-                        indexService.addFileToDB(fileToDB, fileName);
-                        log.info(String.format("XML-file '%s' add to database", fileName));
-                    }
-            );
+                    ).collect(Collectors.toList());
+
+            indexService.addAllFilesToDB(filesFilteredToDB, prefixKey_ns4, file.getName());
+            indexService.addArchiveInfoToDB(file.getName(), regionFolder.getFileName().toString());
+
         });
     }
 
