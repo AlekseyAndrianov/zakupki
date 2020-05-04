@@ -1,6 +1,5 @@
 package ru.newbank.zakupki.indexer.service;
 
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import ru.newbank.zakupki.indexer.domain.ArchivesForRegion;
@@ -9,7 +8,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 public class NotificationManager {
@@ -27,22 +25,12 @@ public class NotificationManager {
             ArchivesForRegion archivesForRegion = indexService.getFirstByArchive_name(file.getName());
             return (archivesForRegion == null); // Проверка по названию архива
         }).forEach(file -> {
-            List<File> filesFromZip = ZipManager.getFilesFromZip(file);
+            List<File> filesFromZip = ZipManager.getFilesFromZip(file, prefixKey_ns4);
 
-            List<File> filesFilteredToDB =
-                    filesFromZip.stream()
-                    .filter(
-                            fileToFiler -> isTargetFile(fileToFiler.getName(), prefixKey_ns4)
-                    ).collect(Collectors.toList());
-
-            indexService.addAllFilesToDB(filesFilteredToDB, prefixKey_ns4, file.getName());
+            indexService.addAllFilesToDB(filesFromZip, prefixKey_ns4, file.getName());
             indexService.addArchiveInfoToDB(file.getName(), regionFolder.getFileName().toString());
 
+            filesFromZip.stream().forEach(File::delete);
         });
-    }
-
-    private boolean isTargetFile(String fileName, String prefixKey_ns4) {
-        String postMask = ".xml";
-        return fileName.contains(prefixKey_ns4) && fileName.contains(postMask);
     }
 }
