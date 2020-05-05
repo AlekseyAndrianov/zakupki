@@ -23,7 +23,7 @@ public class PurchaseInfo {
 
     @Column(name = "notice_id")
     @NonNull
-    private int noticeId;
+    private Integer noticeId;
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime updatedAt;
