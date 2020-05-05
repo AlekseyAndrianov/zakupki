@@ -10,4 +10,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages = "ru.newbank.zakupki")
 public class InfoConfiguration implements WebMvcConfigurer {
 
+
+
 }
