@@ -16,7 +16,7 @@ public class PurchaseXmlFile {
 
     @Id
     @Column(name = "xml_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer xmlId;
 
     @NonNull

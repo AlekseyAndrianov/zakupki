@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
 public class ArchivesForRegion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer archive_id;
 
     @Column(name = "archive_name")
