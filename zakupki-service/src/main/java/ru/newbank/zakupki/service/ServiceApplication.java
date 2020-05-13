@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ServiceApplication {
 
+    static {
+        System.setProperty("ZAKUPKI_DB_URL", "jdbc:postgresql://localhost:5432/zakupki");
+        System.setProperty("ZAKUPKI_DB_USERNAME", "postgres");
+        System.setProperty("ZAKUPKI_DB_PASSWORD", "1234");
+    }
+
     public static void main(String[] args) {
-//		System.setProperty("ZAKUPKI_DB_URL", "jdbc:postgresql://localhost:5432/zakupki");
-//		System.setProperty("ZAKUPKI_DB_USERNAME", "postgres");
-//		System.setProperty("ZAKUPKI_DB_PASSWORD", "1234");
-//		System.setProperty("ROOT_URL", "D:/Projects/Banking/");
         SpringApplication.run(ServiceApplication.class, args);
     }
 }

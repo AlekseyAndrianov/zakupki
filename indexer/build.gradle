@@ -33,15 +33,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-log4j2'
     implementation 'org.json:json:20190722'
 
+    implementation 'org.junit.jupiter:junit-jupiter-api'
+    implementation 'org.junit.jupiter:junit-jupiter-engine'
+
     compileOnly 'org.projectlombok:lombok'
 
-    runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
 
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'junit:junit:4.12'
 }
 test {
     useJUnitPlatform()
