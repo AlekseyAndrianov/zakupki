@@ -34,8 +34,6 @@ class IndexerApplicationTests {
 
     @Test
     public void isRootFolderExists() {
-
         assertTrue(Files.isDirectory(Paths.get(rootUrl)));
-
     }
 }

@@ -2,8 +2,8 @@ plugins {
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'java'
+//    id 'java-library-distribution'
 }
-
 group = 'ru.newbank.zakupki'
 version = '0.0.1-SNAPSHOT'
 description = 'zakupki-service'
@@ -18,14 +18,36 @@ configurations {
         extendsFrom annotationProcessor
     }
     all {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+       exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'ru.newbank.zakupki.service.ServiceApplication'
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+task buildJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'ru.newbank.zakupki.service.ServiceApplication'
+    }
+    baseName = 'zakupki-service'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 repositories {
     mavenCentral()
 }
+
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation ('org.springframework.boot:spring-boot-starter-data-jpa') {
+        exclude group: 'org.slf4j'
+    }
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
     implementation 'org.springframework.boot:spring-boot-starter'
@@ -35,15 +57,16 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine'
 
-    compileOnly 'org.projectlombok:lombok:1.18.8'
+    compileOnly 'org.projectlombok:lombok'
 
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+        exclude group: 'org.slf4j'
     }
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
-    testImplementation 'junit:junit:4.12'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'junit:junit'
 }
 test {
     useJUnitPlatform()

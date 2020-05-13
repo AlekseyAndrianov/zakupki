@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class IndexerApplication {
-//
+    //
 //    static {
 //        System.setProperty("ZAKUPKI_DB_URL", "jdbc:postgresql://localhost:5432/zakupki");
 //        System.setProperty("ZAKUPKI_DB_USERNAME", "postgres");
@@ -14,6 +14,6 @@ public class IndexerApplication {
 //
 //    }
     public static void main(String[] args) {
-		SpringApplication.run(IndexerApplication.class, args);
+        SpringApplication.run(IndexerApplication.class, args);
     }
 }
