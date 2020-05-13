@@ -9,7 +9,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import ru.newbank.zakupki.service.service.PurchaseInfoService;
@@ -37,7 +36,7 @@ public class InfoController {
             headers = "Accept=application/json",
             produces = {"application/json; application/xml; charset=UTF-8"}
     )
-    public String getNoticeByPurchaseNumber(@PathVariable Long purchaseNumber, @Nullable @RequestParam("mediaType") String mediaType) {
+    public String getNoticeByPurchaseNumber(@PathVariable Long purchaseNumber, @RequestParam(value = "mediaType", required = false) String mediaType) {
         String xmlFromTable = purchaseXmlFileService.getXmlByPurchaseNumber(purchaseNumber);
         String result;
         String xmlResource;
