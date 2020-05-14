@@ -27,7 +27,9 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @PropertySource("classpath:application.properties")
@@ -37,12 +39,15 @@ public class IndexService {
     private final ArchivesRepository archivesRepository;
     private final InfoRepository infoRepository;
     private final XmlFileRepository xmlFileRepository;
+    private AtomicBoolean isIndexingNow = new AtomicBoolean(false);
 
     @Value("${file.manager.root.url}")
     private String rootUrl;
 
     @Autowired
-    public IndexService(ArchivesRepository archivesRepository, InfoRepository infoRepository, XmlFileRepository xmlFileRepository) {
+    public IndexService(ArchivesRepository archivesRepository,
+                        InfoRepository infoRepository,
+                        XmlFileRepository xmlFileRepository) {
         this.archivesRepository = archivesRepository;
         this.infoRepository = infoRepository;
         this.xmlFileRepository = xmlFileRepository;
@@ -115,5 +120,41 @@ public class IndexService {
                 nodes.item(i).setTextContent("Content was deleted");
             }
         }
+    }
+
+    public String index(String prefixKey_ns4) {
+        if (isIndexingNow.get()){
+            String message = "Can't execute one more indexing process, please try again later!";
+            log.warn(message);
+            return message;
+        }
+        isIndexingNow.set(true);
+        log.info(String.format("Start indexing by file prefix key '%s'", prefixKey_ns4));
+        long start = System.currentTimeMillis();
+
+        for (Region region : Region.values()) {
+            Path folder = getFolderByRegion(region);
+            manageChangesForRegion(folder, prefixKey_ns4);
+        }
+        long stop = System.currentTimeMillis();
+        String message = "Finish indexing after " + ((stop - start) / 1000) + " sec.";
+        log.info(message);
+        isIndexingNow.set(false);
+        return message;
+    }
+
+    public void manageChangesForRegion(Path regionFolder, String prefixKey_ns4) {
+        List<File> files = Arrays.asList(regionFolder.toFile().listFiles());
+        files.stream().filter(file -> { // проверяем прошел ли файл процедуру
+            ArchivesForRegion archivesForRegion = getFirstByArchive_name(file.getName());
+            return (archivesForRegion == null); // Проверка по названию архива
+        }).forEach(file -> {
+            List<File> filesFromZip = ZipManager.getFilesFromZip(file, prefixKey_ns4);
+
+            addAllFilesToDB(filesFromZip, prefixKey_ns4, file.getName());
+            addArchiveInfoToDB(file.getName(), regionFolder.getFileName().toString());
+
+            filesFromZip.stream().forEach(File::delete);
+        });
     }
 }

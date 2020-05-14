@@ -20,8 +20,10 @@ test-and-build:
     - export GRADLE_USER_HOME=`pwd`/.gradle
     - chmod +x ./gradlew
   script:
-    - ./gradlew test
-    - ./gradlew bootJar
+    - ./indexer/gradlew test
+    - ./indexer/gradlew bootJar
+    - ./zakupki-service/gradlew test
+    - ./zakupki-service/gradlew bootJar
   artifacts:
     expire_in: 1 hour
     paths:
@@ -40,6 +42,7 @@ docker-build:
     - master
     - tags
     - metalog/KYC-42
+    - Andrianov/KYC-43
 
 argocd-deploy:
   image: ${REGISTRY}/argocd-cli:master
@@ -57,3 +60,4 @@ argocd-deploy:
     - master
     - tags
     - metalog/KYC-42
+    - Andrianov/KYC-43
