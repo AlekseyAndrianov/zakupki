@@ -18,7 +18,7 @@ test-and-build:
   stage: build
   before_script:
     - export GRADLE_USER_HOME=`pwd`/.gradle
-    - chmod +x ./gradlew
+    - chmod +x ./indexer/gradlew && ./zakupki-service/gradlew
   script:
     - ./indexer/gradlew test
     - ./indexer/gradlew bootJar
