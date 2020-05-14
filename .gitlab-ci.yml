@@ -27,7 +27,7 @@ test-and-build:
   artifacts:
     expire_in: 1 hour
     paths:
-      - build/libs/
+      - indexer/build/libs/
 
 docker-build:
   image: docker
