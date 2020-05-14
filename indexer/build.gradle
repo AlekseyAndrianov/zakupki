@@ -27,15 +27,14 @@ jar {
         attributes 'Main-Class': 'ru.newbank.zakupki.service.IndexerApplication'
     }
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 task buildJar(type: Jar) {
     manifest {
         attributes 'Main-Class': 'ru.newbank.zakupki.service.IndexerApplication'
     }
-    baseName = 'zakupki-service'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 

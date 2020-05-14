@@ -1,14 +1,13 @@
 plugins {
     id 'java'
 }
-
 repositories {
     mavenCentral()
     jcenter()
 }
 dependencies {
-    compile project(':indexer')
-    compile project(':zakupki-service')
+    implementation project(':indexer')
+    implementation project(':zakupki-service')
 }
 test {
     useJUnitPlatform()
