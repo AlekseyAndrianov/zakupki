@@ -17,17 +17,16 @@ test-and-build:
   image: adoptopenjdk:14-jdk-hotspot
   stage: build
   before_script:
-    - export GRADLE_USER_HOME=`pwd`/indexer/.gradle
-    - chmod +x ./indexer/gradlew
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - chmod +x ./gradlew
   script:
-    - ./indexer/gradlew test
-    - ./indexer/gradlew bootJar
-#    - ./zakupki-service/gradlew test
-#    - ./zakupki-service/gradlew bootJar
+    - ./gradlew test
+    - ./gradlew bootJar
   artifacts:
     expire_in: 1 hour
     paths:
       - indexer/build/libs/
+      - zakupki-service/build/libs/
 
 docker-build:
   image: docker

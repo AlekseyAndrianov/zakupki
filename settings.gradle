@@ -3,3 +3,7 @@
  */
 
 rootProject.name = 'zakupki'
+
+include ':indexer', ':zakupki-service'
+project(':indexer').projectDir = new File('/indexer')
+project(':zakupki-service').projectDir = new File('/zakupki-service')
