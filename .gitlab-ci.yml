@@ -18,12 +18,12 @@ test-and-build:
   stage: build
   before_script:
     - export GRADLE_USER_HOME=`pwd`/.gradle
-    - chmod +x ./indexer/gradlew && ./zakupki-service/gradlew
+    - chmod +x ./indexer/gradlew
   script:
     - ./indexer/gradlew test
     - ./indexer/gradlew bootJar
-    - ./zakupki-service/gradlew test
-    - ./zakupki-service/gradlew bootJar
+#    - ./zakupki-service/gradlew test
+#    - ./zakupki-service/gradlew bootJar
   artifacts:
     expire_in: 1 hour
     paths:
