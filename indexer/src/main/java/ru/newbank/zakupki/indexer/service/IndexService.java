@@ -43,6 +43,9 @@ public class IndexService {
     @Value("${file.manager.root.url}")
     private String rootUrl;
 
+    @Value("${regions.folder.name}")
+    private String regionsFolderName;
+
     @Autowired
     public IndexService(ArchivesRepository archivesRepository,
                         InfoRepository infoRepository,
@@ -127,8 +130,7 @@ public class IndexService {
         log.info(String.format("Start indexing by file prefix key '%s'", prefixKey_ns4));
         long start = System.currentTimeMillis();
 
-        List<File> regions = Arrays.asList(Paths.get(rootUrl).toFile().listFiles());
-        log.info(String.format("Regions count for folder '%s' is '%s'", Paths.get(rootUrl).toFile().getAbsolutePath(), regions.size()));
+        List<File> regions = Arrays.asList(Paths.get(rootUrl, regionsFolderName).toFile().listFiles());
         for (File region : regions) {
             manageChangesForRegion(region, prefixKey_ns4);
         }
@@ -142,7 +144,6 @@ public class IndexService {
     public void manageChangesForRegion(File regionFolder, String prefixKey_ns4) {
         indexZip(regionFolder, "currMonth", prefixKey_ns4);
         indexZip(regionFolder, "prevMonth", prefixKey_ns4);
-
     }
 
     private void indexZip(File regionFolder, String monthFolder, String prefixKey_ns4) {
@@ -150,16 +151,12 @@ public class IndexService {
         File targetFolder = Paths.get(regionFolder.getPath(), "notifications", monthFolder).toFile();
         File[] filesMonthFolder = targetFolder.listFiles();
         if (filesMonthFolder == null) {
-         log.warn("No found files in the directory: " + targetFolder.getAbsolutePath());
+            log.warn("No found files in the directory: " + targetFolder.getAbsolutePath());
             return;
         }
         List<File> files = Arrays.asList(filesMonthFolder);
-        log.info(String.format("Count files in folder '%s' is '%d'", targetFolder.getName(), files.size()));
         files.stream().filter(file -> { // проверяем прошел ли файл процедуру
             ArchivesForRegion archivesForRegion = getFirstByArchive_name(file.getName());
-            log.info(String.format("ArchivesForRegion in DB with name '%s' was '%s'",
-                    file.getName(),
-                    (archivesForRegion == null ? "NOT FOUND" : "FOUND")));
             return (archivesForRegion == null); // Проверка по названию архива
         }).forEach(file -> {
             List<File> filesFromZip = ZipManager.getFilesFromZip(file, prefixKey_ns4);
