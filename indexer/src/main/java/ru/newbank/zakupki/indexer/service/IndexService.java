@@ -22,6 +22,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -55,10 +56,6 @@ public class IndexService {
 
     public ArchivesForRegion getFirstByArchive_name(String name) {
         return archivesRepository.findByArchiveName(name);
-    }
-
-    public Path getFolderByRegion(Region region) {
-        return Paths.get(rootUrl, region.getName());
     }
 
     public void addArchiveInfoToDB(String archiveName, String region) {
@@ -132,9 +129,11 @@ public class IndexService {
         log.info(String.format("Start indexing by file prefix key '%s'", prefixKey_ns4));
         long start = System.currentTimeMillis();
 
-        for (Region region : Region.values()) {
-            Path folder = getFolderByRegion(region);
-            manageChangesForRegion(folder, prefixKey_ns4);
+        List<File> regions = Arrays.asList(Paths.get(rootUrl).toFile().listFiles());
+        for (File region : regions) {
+            if (region.isFile())
+                continue;
+            manageChangesForRegion(region, prefixKey_ns4);
         }
         long stop = System.currentTimeMillis();
         String message = "Finish indexing after " + ((stop - start) / 1000) + " sec.";
@@ -143,8 +142,8 @@ public class IndexService {
         return message;
     }
 
-    public void manageChangesForRegion(Path regionFolder, String prefixKey_ns4) {
-        List<File> files = Arrays.asList(regionFolder.toFile().listFiles());
+    public void manageChangesForRegion(File regionFolder, String prefixKey_ns4) {
+        List<File> files = Arrays.asList(regionFolder.listFiles());
         files.stream().filter(file -> { // проверяем прошел ли файл процедуру
             ArchivesForRegion archivesForRegion = getFirstByArchive_name(file.getName());
             return (archivesForRegion == null); // Проверка по названию архива
@@ -152,7 +151,7 @@ public class IndexService {
             List<File> filesFromZip = ZipManager.getFilesFromZip(file, prefixKey_ns4);
 
             addAllFilesToDB(filesFromZip, prefixKey_ns4, file.getName());
-            addArchiveInfoToDB(file.getName(), regionFolder.getFileName().toString());
+            addArchiveInfoToDB(file.getName(), regionFolder.getName().toString());
 
             filesFromZip.stream().forEach(File::delete);
         });
