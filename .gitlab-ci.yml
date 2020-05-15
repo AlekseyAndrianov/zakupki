@@ -54,7 +54,7 @@ argocd-deploy:
     APP: staging-zakupki
   script:
     - argocd app set $APP --kustomize-image ${REGISTRY}/${NAME}:${CI_COMMIT_SHORT_SHA}
-    - argocd app sync $APP --force
+    - argocd app sync $APP --force || true
   only:
     - master
     - tags
