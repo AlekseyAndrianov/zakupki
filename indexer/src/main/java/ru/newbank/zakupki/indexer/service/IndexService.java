@@ -22,8 +22,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -120,7 +118,7 @@ public class IndexService {
     }
 
     public String index(String prefixKey_ns4) {
-        if (isIndexingNow.get()){
+        if (isIndexingNow.get()) {
             String message = "Can't execute one more indexing process, please try again later!";
             log.warn(message);
             return message;
@@ -143,7 +141,18 @@ public class IndexService {
     }
 
     public void manageChangesForRegion(File regionFolder, String prefixKey_ns4) {
-        List<File> files = Arrays.asList(regionFolder.listFiles());
+        indexZip("currMonth", regionFolder, prefixKey_ns4);
+        indexZip("prevMonth", regionFolder, prefixKey_ns4);
+
+    }
+
+    private void indexZip(String monthFolder, File regionFolder, String prefixKey_ns4) {
+
+        File[] filesMonthFolder = Paths.get(regionFolder.getPath(), "notifications", monthFolder).toFile().listFiles();
+        if (filesMonthFolder == null)
+            return;
+        List<File> files = Arrays.asList(filesMonthFolder);
+
         files.stream().filter(file -> { // проверяем прошел ли файл процедуру
             ArchivesForRegion archivesForRegion = getFirstByArchive_name(file.getName());
             return (archivesForRegion == null); // Проверка по названию архива
@@ -151,7 +160,7 @@ public class IndexService {
             List<File> filesFromZip = ZipManager.getFilesFromZip(file, prefixKey_ns4);
 
             addAllFilesToDB(filesFromZip, prefixKey_ns4, file.getName());
-            addArchiveInfoToDB(file.getName(), regionFolder.getName().toString());
+            addArchiveInfoToDB(file.getName(), regionFolder.getName());
 
             filesFromZip.stream().forEach(File::delete);
         });
