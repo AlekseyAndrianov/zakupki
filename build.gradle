@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+repositories {
+    mavenCentral()
+    jcenter()
+}
+dependencies {
+    implementation project(':indexer')
+    implementation project(':zakupki-service')
+}
+test {
+    useJUnitPlatform()
+}

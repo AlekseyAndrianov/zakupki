@@ -1,0 +1,4 @@
+**
+!build/libs
+!indexer/build/libs
+!zakupki-service/build/libs

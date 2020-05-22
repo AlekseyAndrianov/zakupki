@@ -1,0 +1,70 @@
+plugins {
+    id 'org.springframework.boot' version '2.2.6.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'java'
+}
+
+group = 'ru.newbank.zakupki'
+version = '0.0.1-SNAPSHOT'
+description = 'indexer'
+sourceCompatibility = '1.8'
+
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'ru.newbank.zakupki.service.IndexerApplication'
+    }
+    from {
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+task buildJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'ru.newbank.zakupki.service.IndexerApplication'
+    }
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation ('org.springframework.boot:spring-boot-starter-data-jpa') {
+        exclude group: 'org.slf4j'
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.flywaydb:flyway-core:6.0.8'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+
+    implementation 'org.junit.jupiter:junit-jupiter-api'
+    implementation 'org.junit.jupiter:junit-jupiter-engine'
+
+    compileOnly 'org.projectlombok:lombok'
+
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+        exclude group: 'org.slf4j'
+    }
+
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'junit:junit:4.12'
+}
+test {
+    useJUnitPlatform()
+}
