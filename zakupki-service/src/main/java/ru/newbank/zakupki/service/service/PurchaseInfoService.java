@@ -15,7 +15,7 @@ public class PurchaseInfoService {
         this.infoRepository = infoRepository;
     }
 
-    public Integer getNotice_idByPurchase_number(Long purchaseNumber) {
+    public Integer getNoticeIdByPurchaseNumber(Long purchaseNumber) {
         PurchaseInfo purchaseInfo = infoRepository.findByPurchaseNumber(purchaseNumber);
         return purchaseInfo == null ? null : purchaseInfo.getNoticeId();
     }

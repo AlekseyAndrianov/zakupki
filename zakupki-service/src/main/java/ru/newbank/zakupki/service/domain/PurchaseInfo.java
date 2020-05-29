@@ -25,6 +25,9 @@ public class PurchaseInfo {
     @NonNull
     private Integer noticeId;
 
+    @Column(name = "prefix_key")
+    private String prefixKey;
+
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime updatedAt;
 }

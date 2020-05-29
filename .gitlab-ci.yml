@@ -42,6 +42,7 @@ docker-build:
     - tags
     - metalog/KYC-42
     - Andrianov/KYC-43
+    - Andrianov/KYC-45
 
 argocd-deploy:
   image: ${REGISTRY}/argocd-cli:master
@@ -60,3 +61,4 @@ argocd-deploy:
     - tags
     - metalog/KYC-42
     - Andrianov/KYC-43
+    - Andrianov/KYC-45

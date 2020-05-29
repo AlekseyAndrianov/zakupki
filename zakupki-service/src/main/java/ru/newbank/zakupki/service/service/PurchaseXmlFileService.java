@@ -22,5 +22,4 @@ public class PurchaseXmlFileService {
         return purchaseXmlFile == null ? null : purchaseXmlFile.getXmlFile();
     }
 
-
 }
