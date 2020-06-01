@@ -6,21 +6,27 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import ru.newbank.zakupki.indexer.domain.ArchivesForRegion;
+import ru.newbank.zakupki.indexer.domain.PurchaseCodeMapping;
 import ru.newbank.zakupki.indexer.domain.PurchaseInfo;
 import ru.newbank.zakupki.indexer.domain.PurchaseXmlFile;
 import ru.newbank.zakupki.indexer.repos.ArchivesRepository;
 import ru.newbank.zakupki.indexer.repos.InfoRepository;
+import ru.newbank.zakupki.indexer.repos.PurchaseCodeMappingRepository;
 import ru.newbank.zakupki.indexer.repos.XmlFileRepository;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -38,6 +44,8 @@ public class IndexService {
     private final ArchivesRepository archivesRepository;
     private final InfoRepository infoRepository;
     private final XmlFileRepository xmlFileRepository;
+    private final PurchaseCodeMappingRepository purchaseCodeMappingRepository;
+
     private AtomicBoolean isIndexingNow = new AtomicBoolean(false);
 
     @Value("${file.manager.root.url}")
@@ -49,10 +57,12 @@ public class IndexService {
     @Autowired
     public IndexService(ArchivesRepository archivesRepository,
                         InfoRepository infoRepository,
-                        XmlFileRepository xmlFileRepository) {
+                        XmlFileRepository xmlFileRepository,
+                        PurchaseCodeMappingRepository purchaseCodeMappingRepository) {
         this.archivesRepository = archivesRepository;
         this.infoRepository = infoRepository;
         this.xmlFileRepository = xmlFileRepository;
+        this.purchaseCodeMappingRepository = purchaseCodeMappingRepository;
     }
 
     public ArchivesForRegion getFirstByArchive_name(String name) {
@@ -67,6 +77,7 @@ public class IndexService {
     public void addAllFilesToDB(List<File> fileToDB, String prefixKey_ns4, String archiveName) {
         List<PurchaseInfo> purchaseInfoList = new ArrayList<>();
         List<PurchaseXmlFile> purchaseXmlFileList = new ArrayList<>();
+        List<PurchaseCodeMapping> purchaseCodeMappingList = new ArrayList<>();
 
         fileToDB.stream().forEach(file -> {
             String fileName = file.getName();
@@ -76,18 +87,50 @@ public class IndexService {
             int noticeId = Integer.parseInt(fileNamePieces[2].replaceAll(".xml", ""));
             String xmlContentAfterRemoveSignature = reduceFileContent(file);
 
-            PurchaseInfo purchaseInfo = new PurchaseInfo(purchaseNumber, noticeId, OffsetDateTime.now(ZoneId.systemDefault()));
+            PurchaseInfo purchaseInfo = new PurchaseInfo(
+                    purchaseNumber,
+                    noticeId,
+                    prefixKey_ns4,
+                    OffsetDateTime.now(ZoneId.systemDefault()));
             purchaseInfoList.add(purchaseInfo);
 
-            PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(purchaseNumber, fileName, xmlContentAfterRemoveSignature);
+            PurchaseXmlFile purchaseXmlFile = new PurchaseXmlFile(
+                    purchaseNumber,
+                    fileName,
+                    xmlContentAfterRemoveSignature);
             purchaseXmlFileList.add(purchaseXmlFile);
+
+            purchaseCodeMappingList.addAll(getPurchaseCode(file, purchaseNumber));
         });
 
         infoRepository.saveAll(purchaseInfoList);
         xmlFileRepository.saveAll(purchaseXmlFileList);
+        purchaseCodeMappingRepository.saveAll(purchaseCodeMappingList);
 
         log.info(String.format("Add %d xml-files to database from archive '%s'", fileToDB.size(), archiveName));
 
+    }
+
+    private List<PurchaseCodeMapping> getPurchaseCode(File xml, Long purchaseNumber) {
+        List<PurchaseCodeMapping> purchaseCodeMappingList = new ArrayList<>();
+        try {
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document document = documentBuilder.parse(xml);
+            NodeList nodes = document.getElementsByTagName("purchaseCode");
+            int nodesLength = nodes.getLength();
+            for (int i = 0; i < nodesLength; i++) {
+                Node parent = nodes.item(i).getParentNode();
+                if (parent.getNodeName().equals("customerRequirement"))
+                    purchaseCodeMappingList.add(new PurchaseCodeMapping(nodes.item(i).getTextContent(), purchaseNumber));
+            }
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        }
+        return purchaseCodeMappingList;
     }
 
     private String reduceFileContent(File xmlWithSignature) {
