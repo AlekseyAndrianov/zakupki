@@ -18,7 +18,7 @@ import ru.newbank.zakupki.service.service.PurchaseInfoService;
 import ru.newbank.zakupki.service.service.PurchaseXmlFileService;
 
 @RestController
-@RequestMapping("info/")
+@RequestMapping("/api/v1/zakupki-info")
 @Log4j2
 public class InfoController {
 
@@ -37,7 +37,7 @@ public class InfoController {
     }
 
     @GetMapping(
-            value = "purchase_number/{purchaseNumber}",
+            value = "/purchase_number/{purchaseNumber}",
             headers = "Accept=application/json",
             produces = {"application/json; application/xml; charset=UTF-8"}
     )
